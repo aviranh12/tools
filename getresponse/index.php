@@ -159,25 +159,18 @@ class GetResponse
     
 
   public function myAddContactWithCampaignId($campaignId ,$email, $AutoresponderDay, $tagId) {
+      
     $contact = $this->getContactByEmail($email);
-    
-    echo '<br>contact<br>';
-    var_dump($contact);
+   
 
-    echo '<br>contact-id<br>';
-    var_dump($contact->contactId);
+   
     $contact_id = $contact->contactId;
     if ($contact_id) {
-        echo '<br>true<br>';
+        // echo '<br>true<br>';
+        return $this->addTagToContactIdByTagId($contact_id, $tagId);
     } else {
-                echo '<br>false<br>';
-    }
-
-
-    return;
-    
-    if (false) {
-      $this->addTagToContactIdByTagId($contact['id'], $tagId);
+        // echo '<br>false<br>';
+        
     }
 
     $campaign = array("campaignId" => $campaignId);      
@@ -192,6 +185,7 @@ class GetResponse
       "campaign" => $campaign,
       "tags" => $tags
     ];
+
 
     return $this->addContact($param);      
   }
