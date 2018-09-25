@@ -24,32 +24,31 @@ $cookie_name_email = 'email';
 $cookie_name_url = 'url';
 $cookie_name_timeOfUser = 'timeOfUser';
 
+if(isset($_COOKIE[$cookie_name_offer] )) {
+   $offer = $_COOKIE[$cookie_name_offer];
+}
+if(isset($_COOKIE[$cookie_name_email] )) {
+   $email = $_COOKIE[$cookie_name_email];
+}
+if(isset($_COOKIE[$cookie_name_url] )) {
+   $offerUrl = $_COOKIE[$cookie_name_url];
+}
+if(isset($_COOKIE[$cookie_name_timeOfUser] )) {
+   $timeExpireTimestamp = intval($_COOKIE[$cookie_name_timeOfUser]);
+}
+    
 
-if ($_POST) {
+if ($_POST && ($offer != $_POST['offer'] || $email != $_POST['email'])) {
     $offer = $_POST['offer'];
     $email = $_POST['email'];	
+	$offerUrl = null;
+	$timeExpireTimestamp = null;
 	
-   if (isset($offer)) {
+   if (isset($offer) && isset($email)) {
     	$offer = str_replace(' ', '+', $offer);
     	setcookie($cookie_name_offer, $offer , 2147483647, "/"); // 86400 = 1 day
-    }
-
-    if (isset($email)) {
     	$email = str_replace(' ', '+', $email);
     	setcookie($cookie_name_email, $email , 2147483647, "/"); // 86400 = 1 day
-    }
-} else {
-    if(isset($_COOKIE[$cookie_name_offer] )) {
-       $offer = $_COOKIE[$cookie_name_offer];
-    }
-    if(isset($_COOKIE[$cookie_name_email] )) {
-       $email = $_COOKIE[$cookie_name_email];
-    }
-	if(isset($_COOKIE[$cookie_name_url] )) {
-       $offerUrl = $_COOKIE[$cookie_name_url];
-    }
-	if(isset($_COOKIE[$cookie_name_timeOfUser] )) {
-       $timeExpireTimestamp = intval($_COOKIE[$cookie_name_timeOfUser]);
     }
 }
 
@@ -127,11 +126,11 @@ $timeNow  = new DateTime();
 $diff = $timeExpireTimestamp - $timeNow->getTimestamp();
 
 
-echo "<br><br>diff<br>";
-var_dump($diff);
+//echo "<br><br>diff<br>";
+//var_dump($diff);
 
     if ($fetch) {
-    var_dump('db fetch');
+  //      var_dump('db fetch');
     }
 
 ?>
