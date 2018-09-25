@@ -21,15 +21,19 @@ if ($_GET['offer']) {
 
 $cookie_name_offer = 'offer';
 $cookie_name_email = 'email';
-    
+$cookie_name_url = 'url';
+$cookie_name_timeOfUser = 'timeOfUser';
+
+
 if ($_POST) {
     $offer = $_POST['offer'];
-    $email = $_POST['email'];
+    $email = $_POST['email'];	
+	
    if (isset($offer)) {
     	$offer = str_replace(' ', '+', $offer);
     	setcookie($cookie_name_offer, $offer , 2147483647, "/"); // 86400 = 1 day
     }
-    
+
     if (isset($email)) {
     	$email = str_replace(' ', '+', $email);
     	setcookie($cookie_name_email, $email , 2147483647, "/"); // 86400 = 1 day
@@ -41,6 +45,12 @@ if ($_POST) {
     if(isset($_COOKIE[$cookie_name_email] )) {
        $email = $_COOKIE[$cookie_name_email];
     }
+	if(isset($_COOKIE[$cookie_name_url] )) {
+       $offerUrl = $_COOKIE[$cookie_name_url];
+    }
+	if(isset($_COOKIE[$cookie_name_timeOfUser] )) {
+       $timeExpireTimestamp = intval($_COOKIE[$cookie_name_timeOfUser]);
+    }
 }
 
 if (!$offer) {
@@ -48,70 +58,90 @@ if (!$offer) {
   return;
 }
 
-$servername = "localhost";
-$username = "aviranh1_l_o_i_s";
-$password = "Ec8wnwfDIm2WvUzh%62^*IP";
-$dbname = "aviranh1_limitedoffer";
+if (!$offerUrl || !$timeExpireTimestamp) {
+    $fetch = true;
+	$servername = "localhost";
+	$username = "aviranh1_l_o_i_s";
+	$password = "Ec8wnwfDIm2WvUzh%62^*IP";
+	$dbname = "aviranh1_limitedoffer";
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+	// Create connection
+	$conn = new mysqli($servername, $username, $password, $dbname);
+	$email = mysqli_real_escape_string($conn, $email);
+	// Check connection
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
 
-$email = mysqli_real_escape_string($conn, $email);
+	$offer = mysqli_real_escape_string($conn, $offer);
 
-// Check connection
-if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
+	$sqlOffer = sprintf("SELECT time_in_secends, url FROM offers WHERE offer_name = '%s'",
+	$offer);
+
+	$resultOffer = $conn->query($sqlOffer);
+
+	if ($resultOffer->num_rows == 0) {
+		echo "offer not exists!!!";
+		return;
+	}
+
+	$rowOffer = $resultOffer->fetch_assoc();
+
+	$timeInSecends = $rowOffer["time_in_secends"];
+	$offerUrl = $rowOffer["url"];
+	
+	setcookie($cookie_name_url, $offerUrl , 2147483647, "/"); // 86400 = 1 day
+
+	$sql = sprintf("SELECT time FROM enters WHERE email = '%s' and offer = '%s'",
+		  $email, $offer);
+
+	$result = $conn->query($sql);
+
+	$timeOfUser;
+
+	
+	if ($result->num_rows > 0) {
+		// output data of each row
+		while($row = $result->fetch_assoc()) {
+			$timeOfUser = new DateTime($row["time"]);
+		}
+	} else {
+		$timeOfUser = new DateTime();
+		$sql = sprintf("INSERT INTO enters (email, offer, time) VALUES ('%s', '%s', '%s')",
+		  mysqli_real_escape_string($conn, $email), mysqli_real_escape_string($conn, $offer), $timeOfUser->format('Y-m-d H:i:s'));
+
+		$conn->query($sql);
+	}
+
+	
+
+	$conn->close();
+	
+	$timeExpire =  $timeOfUser->add(new DateInterval('PT'.$timeInSecends.'S'));
+	
+	$timeExpireTimestamp = $timeExpire->getTimestamp();
+
+    $timeExpireTimestampStrimg = (string)$timeExpireTimestamp;
+	setcookie($cookie_name_timeOfUser, $timeExpireTimestampStrimg , 2147483647, "/"); // 86400 = 1 day
+	
+
 }
-
-$offer = mysqli_real_escape_string($conn, $offer);
-
-$sqlOffer = sprintf("SELECT time_in_secends, url FROM offers WHERE offer_name = '%s'",
-$offer);
-
-$resultOffer = $conn->query($sqlOffer);
-
-if ($resultOffer->num_rows == 0) {
-    echo "offer not exists!!!";
-    return;
-}
-
-$rowOffer = $resultOffer->fetch_assoc();
-
-$timeInSecends = $rowOffer["time_in_secends"];
-$offerUrl = $rowOffer["url"];
- 
-$sql = sprintf("SELECT time FROM enters WHERE email = '%s' and offer = '%s'",
-      $email, $offer);
-
-$result = $conn->query($sql);
-
-$timeOfUser;
-
 $timeNow  = new DateTime();
-if ($result->num_rows > 0) {
-    // output data of each row
-    while($row = $result->fetch_assoc()) {
-        $timeOfUser = new DateTime($row["time"]);
+$diff = $timeExpireTimestamp - $timeNow->getTimestamp();
+
+
+echo "<br><br>diff<br>";
+var_dump($diff);
+
+    if ($fetch) {
+    var_dump('db fetch');
     }
-} else {
-    $timeOfUser = new DateTime();
-    $sql = sprintf("INSERT INTO enters (email, offer, time) VALUES ('%s', '%s', '%s')",
-      mysqli_real_escape_string($conn, $email), mysqli_real_escape_string($conn, $offer), $timeOfUser->format('Y-m-d H:i:s'));
-
-	$conn->query($sql);
-}
-$conn->close();
-
-
-$timeExpire =  $timeOfUser->add(new DateInterval('PT'.$timeInSecends.'S'));
-
-$diff = $timeExpire->getTimestamp() - $timeNow->getTimestamp();
 
 ?>
 
 <html>
 <head>
-    <title>הצעה מוגבלת בזמן</title>
+    <title>׳”׳¦׳¢׳” ׳׳•׳’׳‘׳׳× ׳‘׳–׳׳</title>
     <meta http-equiv="Content-Type" content="text/html;">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -119,14 +149,14 @@ $diff = $timeExpire->getTimestamp() - $timeNow->getTimestamp();
     <script src="countdown/countdown.js"></script>
 </head>
 
-<body dir="rtl">
+<body dir="ltr">
     <div class="box">
 		<header class='topBar'>
 			<center>
 				<?php
 					if ($diff > 0) {
 						?>
-						  ההצעה הזו מסתיימת בעוד...
+						  ׳”׳”׳¦׳¢׳” ׳”׳–׳• ׳׳¡׳×׳™׳™׳׳× ׳‘׳¢׳•׳“...
 
 			<script type="application/javascript">
 	   
@@ -147,7 +177,7 @@ $diff = $timeExpire->getTimestamp() - $timeNow->getTimestamp();
 		
 			<?php
 					}   else {
-								 echo 'ההצעה נגמרה...';
+								 echo '׳”׳”׳¦׳¢׳” ׳ ׳’׳׳¨׳”...';
 					}
 				?>
 			  
